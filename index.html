@@ -1,1436 +1,454 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>吃灰物品墓园</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<style>
-  :root {
-    --sky-top: #0a0a2e;
-    --sky-mid: #1a1a4e;
-    --sky-bottom: #2d1b4e;
-    --ground: #1a2a1a;
-    --ground-dark: #0d1a0d;
-    --stone-light: #8a8a9a;
-    --stone-mid: #6a6a7a;
-    --stone-dark: #4a4a5a;
-    --gold: #c8a84b;
-    --gold-light: #e8c86b;
-    --green-accent: #3a7a3a;
-    --purple-accent: #6a3a8a;
-    --red-accent: #cc3333;
-    --parchment: #f0e8c8;
-    --parchment-dark: #d8c8a0;
-    --ink: #2a1a0a;
-    --white: #f0f0f0;
-    --pixel: 2px;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  
-  body {
-    font-family: 'ZCOOL KuaiLe', cursive;
-    background: var(--sky-top);
-    color: var(--white);
-    min-height: 100vh;
-    overflow-x: hidden;
-    image-rendering: pixelated;
-  }
-
-  /* ====== STARRY SKY BACKGROUND ====== */
-  .sky-bg {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg, #050510 0%, #0a0a2e 30%, #1a1040 60%, #2d1050 80%, #1a2a1a 100%);
-    z-index: 0;
-    overflow: hidden;
-  }
-
-  .star {
-    position: absolute;
-    background: #fff;
-    border-radius: 50%;
-    animation: twinkle var(--dur, 3s) ease-in-out infinite var(--delay, 0s);
-  }
-
-  @keyframes twinkle {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.3); }
-  }
-
-  .moon {
-    position: absolute;
-    top: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, #fffde0, #f0d060 40%, #c8a840 70%, #a08030 100%);
-    box-shadow: 0 0 40px 15px rgba(240,208,80,0.3), 0 0 80px 30px rgba(240,208,80,0.15);
-    z-index: 1;
-  }
-
-  /* ====== CLOUDS ====== */
-  .cloud {
-    position: absolute;
-    background: rgba(80,60,120,0.4);
-    border-radius: 20px;
-    animation: drift linear infinite;
-  }
-
-  @keyframes drift {
-    from { transform: translateX(-200px); }
-    to { transform: translateX(calc(100vw + 200px)); }
-  }
-
-  /* ====== TREES (pixel style) ====== */
-  .trees-bg {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 200px;
-    z-index: 1;
-    pointer-events: none;
-  }
-
-  .tree {
-    position: absolute;
-    bottom: 0;
-  }
-
-  .tree-trunk {
-    width: 12px;
-    height: 40px;
-    background: #3a2010;
-    margin: 0 auto;
-    image-rendering: pixelated;
-  }
-
-  .tree-top {
-    width: 0;
-    height: 0;
-    border-left: 25px solid transparent;
-    border-right: 25px solid transparent;
-    border-bottom: 60px solid #0a2a0a;
-    filter: drop-shadow(0 0 4px rgba(20,80,20,0.3));
-  }
-  .tree-top2 {
-    width: 0; height: 0;
-    border-left: 20px solid transparent;
-    border-right: 20px solid transparent;
-    border-bottom: 50px solid #0d340d;
-    margin: -30px auto 0;
-  }
-  .tree-top3 {
-    width: 0; height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-bottom: 40px solid #103a10;
-    margin: -20px auto 0;
-  }
-
-  /* ====== GATE ====== */
-  .gate-container {
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    text-align: center;
-    pointer-events: none;
-  }
-
-  .gate {
-    display: inline-block;
-    position: relative;
-  }
-
-  .gate-arch {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: #8a7a5a;
-    font-family: 'Noto Serif SC', serif;
-    background: #1a1008;
-    border: 3px solid #6a5a3a;
-    border-radius: 40px 40px 0 0;
-    padding: 8px 20px 4px;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 0 10px rgba(100,80,40,0.3);
-  }
-
-  /* ====== MAIN LAYOUT ====== */
-  .page-wrapper {
-    position: relative;
-    z-index: 10;
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 20px 16px 60px;
-  }
-
-  /* ====== HEADER ====== */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-    padding-top: 10px;
-  }
-
-  .title-block h1 {
-    font-size: 42px;
-    line-height: 1.1;
-    color: var(--gold-light);
-    text-shadow: 3px 3px 0 #3a2a00, -1px -1px 0 #5a4a10, 0 0 20px rgba(200,168,75,0.4);
-    letter-spacing: 2px;
-  }
-
-  .title-block .skull {
-    font-size: 32px;
-    margin-right: 4px;
-  }
-
-  .title-block .subtitle {
-    font-size: 13px;
-    color: #a090b0;
-    margin-top: 6px;
-    font-family: 'Noto Serif SC', serif;
-    letter-spacing: 1px;
-  }
-
-  .count-box {
-    background: rgba(10,10,30,0.8);
-    border: 2px solid var(--stone-dark);
-    border-radius: 4px;
-    padding: 12px 20px;
-    text-align: center;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 2px 2px 0 #000;
-    position: relative;
-  }
-
-  .count-box::before {
-    content: '💀';
-    position: absolute;
-    top: -16px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 22px;
-  }
-
-  .count-box .label {
-    font-size: 12px;
-    color: #9090a0;
-    font-family: 'Noto Serif SC', serif;
-  }
-
-  .count-box .number {
-    font-size: 48px;
-    color: var(--gold-light);
-    line-height: 1;
-    text-shadow: 2px 2px 0 #3a2a00;
-  }
-
-  .count-box .unit {
-    font-size: 16px;
-    color: #9090a0;
-  }
-
-  /* ====== FORM ====== */
-  .form-panel {
-    background: rgba(10,10,25,0.85);
-    border: 2px solid var(--stone-dark);
-    border-radius: 6px;
-    padding: 18px 20px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-    backdrop-filter: blur(4px);
-  }
-
-  .form-title {
-    font-size: 16px;
-    color: var(--gold);
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: 2fr 1.2fr 1fr 2fr auto;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .form-group label {
-    font-size: 11px;
-    color: #8080a0;
-    font-family: 'Noto Serif SC', serif;
-  }
-
-  .form-group input {
-    background: rgba(20,20,40,0.9);
-    border: 1px solid #3a3a5a;
-    border-radius: 3px;
-    padding: 8px 10px;
-    color: var(--white);
-    font-family: 'ZCOOL KuaiLe', cursive;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-
-  .form-group input::placeholder { color: #505070; }
-  .form-group input:focus { border-color: var(--gold); }
-
-  .form-hint {
-    font-size: 11px;
-    color: #606080;
-    margin-top: 10px;
-    font-family: 'Noto Serif SC', serif;
-  }
-
-  .btn-bury {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(180deg, var(--stone-mid) 0%, var(--stone-dark) 100%);
-    border: 2px solid var(--stone-light);
-    border-radius: 4px;
-    padding: 10px 16px;
-    cursor: pointer;
-    color: var(--white);
-    font-family: 'ZCOOL KuaiLe', cursive;
-    font-size: 15px;
-    line-height: 1.2;
-    transition: all 0.15s;
-    box-shadow: 2px 2px 0 #000, inset 0 1px 0 rgba(255,255,255,0.1);
-    white-space: nowrap;
-    min-width: 80px;
-    align-self: flex-end;
-    height: 58px;
-  }
-
-  .btn-bury:hover {
-    background: linear-gradient(180deg, #8a8a9a 0%, #6a6a7a 100%);
-    transform: translateY(-1px);
-    box-shadow: 3px 3px 0 #000, inset 0 1px 0 rgba(255,255,255,0.15);
-  }
-
-  .btn-bury:active { transform: translateY(1px); box-shadow: 1px 1px 0 #000; }
-
-  .btn-bury .cross { font-size: 20px; }
-
-  /* ====== CEMETERY GROUND ====== */
-  .cemetery-ground {
-    position: relative;
-    min-height: 300px;
-  }
-
-  /* ====== GRAVESTONE GRID ====== */
-  .gravestones-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    padding: 20px 10px;
-  }
-
-  /* ====== GRAVESTONE ====== */
-  .gravestone {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    transition: transform 0.2s;
-    position: relative;
-    animation: riseUp 0.5s ease-out;
-  }
-
-  @keyframes riseUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-
-  .gravestone:hover { transform: translateY(-4px); }
-
-  .gravestone.selected .stone-body {
-    box-shadow: 0 0 20px 6px rgba(200,180,80,0.5), 0 0 40px 12px rgba(200,180,80,0.2);
-    border-color: var(--gold);
-  }
-
-  .stone-cross {
-    width: 16px;
-    height: 28px;
-    background: var(--stone-mid);
-    position: relative;
-    border-radius: 2px 2px 0 0;
-    box-shadow: 1px 1px 0 #000, inset 1px 0 0 rgba(255,255,255,0.1);
-    z-index: 2;
-  }
-
-  .stone-cross::before {
-    content: '';
-    position: absolute;
-    top: 8px; left: -10px;
-    width: 36px; height: 10px;
-    background: var(--stone-mid);
-    border-radius: 2px;
-    box-shadow: 1px 1px 0 #000;
-  }
-
-  .stone-body {
-    width: 130px;
-    min-height: 120px;
-    background: linear-gradient(180deg, var(--stone-light) 0%, var(--stone-mid) 60%, var(--stone-dark) 100%);
-    border-radius: 50% 50% 4px 4px / 30% 30% 4px 4px;
-    border: 2px solid var(--stone-dark);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 8px 8px;
-    box-shadow: 2px 4px 0 #000, inset 2px 2px 0 rgba(255,255,255,0.15), inset -2px -2px 0 rgba(0,0,0,0.3);
-    position: relative;
-    z-index: 1;
-    transition: box-shadow 0.3s, border-color 0.3s;
-    margin-top: -2px;
-  }
-
-  .stone-name {
-    font-size: 15px;
-    color: #1a1a2a;
-    text-align: center;
-    font-weight: 700;
-    margin-bottom: 4px;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
-    line-height: 1.2;
-  }
-
-  .stone-icon {
-    font-size: 32px;
-    margin: 4px 0;
-    filter: drop-shadow(1px 1px 0 rgba(0,0,0,0.4));
-  }
-
-  .stone-age {
-    font-size: 12px;
-    color: #2a2a3a;
-    font-family: 'Noto Serif SC', serif;
-    text-align: center;
-  }
-
-  .stone-base {
-    width: 140px;
-    height: 14px;
-    background: linear-gradient(180deg, var(--stone-dark) 0%, #3a3a4a 100%);
-    border-radius: 2px;
-    box-shadow: 2px 2px 0 #000;
-    margin-top: -2px;
-  }
-
-  .ground-strip {
-    width: 150px;
-    height: 18px;
-    background: linear-gradient(180deg, #2a4a1a 0%, #1a3a0a 100%);
-    border-radius: 2px;
-    margin-top: -2px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .ground-strip::before {
-    content: '';
-    position: absolute;
-    top: 2px; left: 10%;
-    width: 80%; height: 4px;
-    background: rgba(80,140,40,0.4);
-    border-radius: 2px;
-  }
-
-  .skull-row {
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-    font-size: 14px;
-    opacity: 0.7;
-  }
-
-  /* Flowers at base */
-  .stone-flowers {
-    font-size: 12px;
-    position: absolute;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    pointer-events: none;
-  }
-
-  /* Add grave button */
-  .add-grave {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    opacity: 0.5;
-    transition: opacity 0.2s, transform 0.2s;
-  }
-
-  .add-grave:hover { opacity: 0.85; transform: translateY(-3px); }
-
-  .add-grave .stone-body {
-    background: linear-gradient(180deg, #3a3a4a 0%, #2a2a3a 100%);
-    color: #6a6a8a;
-    font-size: 28px;
-    border-style: dashed;
-  }
-
-  .add-grave .stone-label {
-    font-size: 13px;
-    color: #6a6a8a;
-    margin-top: 4px;
-  }
-
-  /* ====== OBITUARY PANEL ====== */
-  .bottom-panels {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 30px;
-  }
-
-  /* ====== PARCHMENT OBITUARY ====== */
-  .obituary-panel {
-    background: var(--parchment);
-    border: 3px solid #8a6a3a;
-    border-radius: 6px;
-    padding: 24px 20px;
-    color: var(--ink);
-    position: relative;
-    box-shadow: 4px 4px 0 #3a2a00, inset 0 0 30px rgba(0,0,0,0.08);
-    font-family: 'Noto Serif SC', serif;
-  }
-
-  .obituary-panel::before, .obituary-panel::after {
-    content: '';
-    position: absolute;
-    top: 6px; bottom: 6px;
-    left: 6px; right: 6px;
-    border: 1px solid rgba(100,70,30,0.3);
-    border-radius: 4px;
-    pointer-events: none;
-  }
-
-  .obit-header {
-    text-align: center;
-    font-size: 20px;
-    color: #3a2a00;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 16px;
-    font-family: 'Ma Shan Zheng', cursive;
-    letter-spacing: 3px;
-  }
-
-  .obit-header .deco {
-    color: #8a6a3a;
-    font-size: 16px;
-  }
-
-  .obit-icon-frame {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    background: var(--parchment-dark);
-    border: 3px solid #6a4a20;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 14px;
-    font-size: 44px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
-    position: relative;
-  }
-
-  .obit-icon-frame::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 8px;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 8'%3E%3Cpath d='M0,4 C10,0 30,8 40,4' stroke='%236a4a20' fill='none' stroke-width='2'/%3E%3C/svg%3E") no-repeat center;
-  }
-
-  .obit-name {
-    text-align: center;
-    font-size: 28px;
-    font-family: 'Ma Shan Zheng', cursive;
-    color: #1a0a00;
-    margin-bottom: 4px;
-    letter-spacing: 2px;
-  }
-
-  .obit-age {
-    text-align: center;
-    font-size: 15px;
-    color: #5a4a2a;
-    margin-bottom: 16px;
-  }
-
-  .obit-divider {
-    border: none;
-    border-top: 1px solid #8a6a3a;
-    margin: 12px 0;
-    opacity: 0.5;
-  }
-
-  .obit-cause {
-    font-size: 14px;
-    line-height: 1.7;
-    color: #3a2a10;
-    text-align: center;
-    margin-bottom: 12px;
-  }
-
-  .obit-cause .label { color: #8a6a3a; font-size: 12px; display: block; margin-bottom: 2px; }
-  .obit-cause .value { color: #1a0a00; }
-
-  .obit-price {
-    text-align: center;
-    font-size: 18px;
-    color: var(--red-accent);
-    font-weight: 700;
-    margin: 12px 0 4px;
-    font-family: 'Ma Shan Zheng', cursive;
-    letter-spacing: 1px;
-  }
-
-  .obit-price-sub {
-    text-align: center;
-    font-size: 12px;
-    color: #6a4a2a;
-    margin-bottom: 12px;
-  }
-
-  .obit-rip {
-    text-align: center;
-    font-size: 16px;
-    color: #3a2a10;
-    letter-spacing: 4px;
-    font-family: 'Ma Shan Zheng', cursive;
-    margin-top: 12px;
-  }
-
-  .obit-empty {
-    text-align: center;
-    color: #8a7a5a;
-    font-size: 14px;
-    padding: 30px 0;
-    line-height: 2;
-  }
-
-  /* ====== SHARE PANEL ====== */
-  .share-panel {
-    background: rgba(10,10,25,0.9);
-    border: 2px solid var(--stone-dark);
-    border-radius: 6px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
-  }
-
-  .share-title {
-    font-size: 18px;
-    color: var(--white);
-    text-align: center;
-  }
-
-  .share-subtitle {
-    font-size: 12px;
-    color: #6060a0;
-    text-align: center;
-    margin-top: -8px;
-    font-family: 'Noto Serif SC', serif;
-  }
-
-  .share-preview {
-    background: var(--parchment);
-    border-radius: 4px;
-    padding: 12px;
-    min-height: 160px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #8a7a5a;
-    font-family: 'Noto Serif SC', serif;
-    font-size: 13px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .share-preview canvas,
-  .share-preview img {
-    max-width: 100%;
-    border-radius: 3px;
-  }
-
-  .share-buttons {
-    display: flex;
-    gap: 8px;
-  }
-
-  .btn-share {
-    flex: 1;
-    padding: 10px 6px;
-    border-radius: 4px;
-    border: 2px solid;
-    font-family: 'ZCOOL KuaiLe', cursive;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-  }
-
-  .btn-download {
-    background: #1a3a1a;
-    border-color: #3a7a3a;
-    color: #80e080;
-  }
-  .btn-download:hover { background: #2a5a2a; }
-
-  .btn-copy {
-    background: #1a2a3a;
-    border-color: #3a5a8a;
-    color: #80b0e0;
-  }
-  .btn-copy:hover { background: #2a3a5a; }
-
-  .btn-refresh {
-    background: #2a1a3a;
-    border-color: #6a3a8a;
-    color: #c080e0;
-  }
-  .btn-refresh:hover { background: #3a2a5a; }
-
-  /* ====== TIP BOX ====== */
-  .tip-box {
-    background: rgba(40,30,10,0.8);
-    border: 1px solid #5a4a1a;
-    border-radius: 4px;
-    padding: 8px 12px;
-    font-size: 12px;
-    color: #c0a060;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: 'Noto Serif SC', serif;
-  }
-
-  /* ====== FOOTER ====== */
-  .footer {
-    text-align: center;
-    padding: 20px;
-    font-size: 12px;
-    color: #4a4a6a;
-    font-family: 'Noto Serif SC', serif;
-    border-top: 1px solid #2a2a4a;
-    margin-top: 30px;
-    position: relative;
-    z-index: 10;
-  }
-
-  /* ====== PIXEL DECORATIONS ====== */
-  .pixel-skulls {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    font-size: 14px;
-    opacity: 0.3;
-    margin: 10px 0;
-  }
-
-  /* ====== OVERLAY MODAL ====== */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 0.2s;
-  }
-
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  .modal-overlay.hidden { display: none; }
-
-  .modal-box {
-    background: rgba(10,10,30,0.98);
-    border: 2px solid var(--stone-mid);
-    border-radius: 8px;
-    padding: 24px;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 0 40px rgba(0,0,0,0.8);
-  }
-
-  .modal-title { font-size: 18px; color: var(--gold); margin-bottom: 16px; text-align: center; }
-
-  .modal-btns { display: flex; gap: 10px; margin-top: 16px; }
-
-  .btn-modal {
-    flex: 1; padding: 10px; border-radius: 4px;
-    border: 2px solid; font-family: 'ZCOOL KuaiLe', cursive;
-    font-size: 15px; cursor: pointer; transition: all 0.15s;
-  }
-
-  .btn-confirm { background: #3a0a0a; border-color: #aa3333; color: #ff8080; }
-  .btn-confirm:hover { background: #5a1010; }
-  .btn-cancel { background: #1a1a3a; border-color: #4a4a8a; color: #a0a0e0; }
-  .btn-cancel:hover { background: #2a2a4a; }
-
-  /* ====== HIDDEN CANVAS FOR GENERATION ====== */
-  #obituary-canvas-source {
-    position: absolute;
-    left: -9999px;
-    top: 0;
-  }
-
-  /* ====== RESPONSIVE ====== */
-  @media (max-width: 700px) {
-    .gravestones-grid { grid-template-columns: repeat(2, 1fr); }
-    .form-row { grid-template-columns: 1fr 1fr; }
-    .btn-bury { grid-column: 1/-1; }
-    .bottom-panels { grid-template-columns: 1fr; }
-    .title-block h1 { font-size: 28px; }
-  }
-
-  /* Context menu */
-  .context-menu {
-    position: fixed;
-    background: rgba(10,10,30,0.95);
-    border: 1px solid var(--stone-mid);
-    border-radius: 4px;
-    padding: 4px 0;
-    z-index: 2000;
-    min-width: 130px;
-    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
-  }
-
-  .context-menu.hidden { display: none; }
-
-  .ctx-item {
-    padding: 8px 16px;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--white);
-    transition: background 0.1s;
-    display: flex; align-items: center; gap: 6px;
-  }
-
-  .ctx-item:hover { background: rgba(255,255,255,0.1); }
-  .ctx-item.danger { color: #ff7070; }
-  .ctx-item.danger:hover { background: rgba(200,50,50,0.2); }
-
-  /* Glow pulse on selected */
-  @keyframes glow-pulse {
-    0%, 100% { box-shadow: 0 0 15px 4px rgba(200,180,80,0.4); }
-    50% { box-shadow: 0 0 25px 8px rgba(200,180,80,0.7); }
-  }
-
-  .gravestone.selected .stone-body {
-    animation: glow-pulse 2s ease-in-out infinite;
-    border-color: var(--gold) !important;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>出门定心丸 Pro - 自适应版</title>
+    <style>
+        /* 1. 基础样式与移动端重置 */
+        :root {
+            --bg-color: #e0e5ec;
+            --text-color: #374151;
+            --sub-text-color: #6b7280;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+            --active-color: #4cd964; /* 绿色 */
+            --delete-color: #ff3b30; /* 红色 */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            /* 禁止长按选中文本，提升APP感 */
+            user-select: none;
+            -webkit-touch-callout: none;
+            /* 移除移动端点击高亮阴影 */
+            -webkit-tap-highlight-color: transparent;
+            /* 移除按钮默认外观 */
+            -webkit-appearance: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            /* 适配 iPhone 刘海屏底部 */
+            padding: 15px 15px calc(20px + env(safe-area-inset-bottom)) 15px;
+        }
+
+        /* 2. 主应用容器：自适应宽度 */
+        .app-container {
+            width: 100%;
+            max-width: 500px; /* 限制大屏显示 */
+            display: flex;
+            flex-direction: column;
+            gap: 18px; /* 元素间距 */
+        }
+
+        /* 3. 头部：缩小以腾出屏幕空间 */
+        header {
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 3px;
+        }
+
+        header p {
+            font-size: 12px;
+            color: var(--sub-text-color);
+        }
+
+        /* 时钟：缩小 */
+        #live-clock {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 15px;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--bg-color);
+            border-radius: 50px;
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), 
+                        inset -3px -3px 6px var(--shadow-light);
+        }
+
+        /* 4. 打卡网格：完美自适应 */
+        #check-grid {
+            display: grid;
+            /* 核心：自动填充列，最小 140px，最大 1fr */
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+        }
+
+        .check-item-container {
+            position: relative;
+        }
+
+        /* 打卡按钮 */
+        .check-item {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 130px; /* 缩小高度 */
+            background: var(--bg-color);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            box-shadow: 6px 6px 12px var(--shadow-dark), 
+                        -6px -6px 12px var(--shadow-light);
+        }
+
+        /* 点击/激活效果 */
+        .check-item:active {
+            box-shadow: inset 3px 3px 6px var(--shadow-dark), 
+                        inset -3px -3px 6px var(--shadow-light);
+            transform: scale(0.97);
+        }
+
+        .check-item.active {
+            background-color: var(--active-color);
+            color: #ffffff;
+            box-shadow: none;
+            filter: drop-shadow(0 0 5px rgba(76, 217, 100, 0.3));
+        }
+
+        /* 5. 纯 CSS 图标 (保持简约) */
+        .icon { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; position: relative; flex-shrink: 0; }
+
+        /* 门锁图标 */
+        .icon-lock::before { content: ''; position: absolute; width: 18px; height: 24px; border: 3px solid currentColor; border-radius: 4px; top: 10px; }
+        .icon-lock::after { content: ''; position: absolute; width: 10px; height: 14px; border: 3px solid currentColor; border-bottom: none; border-radius: 5px 5px 0 0; top: 1px; }
+
+        /* 空调图标 */
+        .icon-ac::before { content: ''; position: absolute; width: 30px; height: 18px; border: 3px solid currentColor; border-radius: 4px; }
+        .icon-ac::after { content: ''; position: absolute; width: 4px; height: 4px; background: currentColor; border-radius: 50%; right: 5px; bottom: 14px; }
+
+        /* 通用图标 (如卷发棒) */
+        .icon-generic::before { content: ''; position: absolute; width: 18px; height: 12px; border: 3px solid currentColor; border-radius: 3px; top: 9px; }
+        .icon-generic::after { content: ''; position: absolute; width: 3px; height: 9px; background: currentColor; top: 22px; }
+        .icon-generic-prong { position: absolute; width: 3px; height: 7px; background: currentColor; top: 2px; }
+        .prong-l { left: 11px; }
+        .prong-r { right: 11px; }
+
+        .label { font-size: 14px; font-weight: 600; text-align: center; padding: 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+        .status { font-size: 10px; opacity: 0.7; }
+        .check-item.active .status { opacity: 1; }
+
+        /* 删除按钮：移动端长按显示 */
+        .delete-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 22px;
+            height: 22px;
+            background-color: var(--delete-color);
+            color: #ffffff;
+            border: none;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 1px 1px 4px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 5;
+        }
+        
+        /* 移动端特殊：只有在显示删除模式下才可见 */
+        .show-delete .delete-btn {
+            opacity: 1;
+        }
+
+        /* 6. 管理面板 */
+        .management-panel {
+            background: var(--bg-color);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), 
+                        inset -4px -4px 8px var(--shadow-light);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .management-panel h3 { font-size: 16px; text-align: center; }
+
+        .add-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 输入框：缩小 */
+        #new-item-name {
+            flex-grow: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 12px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 13px;
+            outline: none;
+            box-shadow: inset 2px 2px 5px var(--shadow-dark), 
+                        inset -2px -2px 5px var(--shadow-light);
+        }
+
+        /* 添加按钮 */
+        #add-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 12px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 3px 3px 6px var(--shadow-dark), 
+                        -3px -3px 6px var(--shadow-light);
+        }
+        #add-btn:active {
+            box-shadow: inset 2px 2px 4px var(--shadow-dark), 
+                        inset -2px -2px 4px var(--shadow-light);
+        }
+
+        /* 7. 定心丸面板：缩小 */
+        .reassurance-panel {
+            background: var(--bg-color);
+            border-radius: 20px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), 
+                        inset -4px -4px 8px var(--shadow-light);
+        }
+        .reassurance-panel h2 { font-size: 16px; margin-bottom: 8px; }
+        #reassurance-msg { font-size: 13px; line-height: 1.4; color: var(--sub-text-color); }
+        #last-check-time { font-weight: 700; color: var(--text-color); }
+
+        footer { text-align: center; font-size: 10px; color: var(--sub-text-color); padding: 5px 0; line-height: 1.4; }
+
+    </style>
 </head>
 <body>
+    <div class="app-container">
+        <header>
+            <h1>出门定心丸 Pro</h1>
+            <p>您的自定义OCD记录器 (自适应版)</p>
+            <div id="live-clock">--:--:--</div>
+        </header>
 
-<!-- Sky background with stars -->
-<div class="sky-bg" id="sky"></div>
+        <div id="check-grid">
+            </div>
 
-<!-- Moon -->
-<div class="moon"></div>
-
-<!-- Gate sign at top -->
-<div class="gate-container">
-  <div class="gate">
-    <div class="gate-arch">✦ CHIHUI CEMETERY ✦</div>
-  </div>
-</div>
-
-<!-- Trees background -->
-<div class="trees-bg" id="trees"></div>
-
-<!-- Context menu -->
-<div class="context-menu hidden" id="contextMenu">
-  <div class="ctx-item" id="ctxView">📜 查看讣告</div>
-  <div class="ctx-item danger" id="ctxDelete">🗑️ 挖出来（删除）</div>
-</div>
-
-<!-- Delete confirm modal -->
-<div class="modal-overlay hidden" id="deleteModal">
-  <div class="modal-box">
-    <div class="modal-title">⚠️ 真的要挖出来吗？</div>
-    <div style="text-align:center;color:#9090b0;font-size:14px;font-family:'Noto Serif SC',serif">
-      此操作将永久删除这件吃灰物品，无法恢复。<br>难道你要"复活"它？
-    </div>
-    <div class="modal-btns">
-      <button class="btn-modal btn-cancel" id="deleteCancelBtn">取消</button>
-      <button class="btn-modal btn-confirm" id="deleteConfirmBtn">挖出来！</button>
-    </div>
-  </div>
-</div>
-
-<!-- Main content -->
-<div class="page-wrapper">
-  <!-- Header -->
-  <div class="header">
-    <div class="title-block">
-      <h1><span class="skull">💀</span>吃灰物品<br>墓园</h1>
-      <div class="subtitle">纪念那些年被我买来又抛弃的热爱</div>
-    </div>
-    <div class="count-box">
-      <div class="label">已入土数</div>
-      <div class="number" id="countNum">0</div>
-      <div class="unit">件</div>
-    </div>
-  </div>
-
-  <!-- Form -->
-  <div class="form-panel">
-    <div class="form-title">🪦 新增吃灰物品</div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>物品名称</label>
-        <input type="text" id="fName" placeholder="比如：Kindle" maxlength="10">
-      </div>
-      <div class="form-group">
-        <label>购买金额（元）</label>
-        <input type="number" id="fPrice" placeholder="比如：499" min="0">
-      </div>
-      <div class="form-group">
-        <label>享年数（天）</label>
-        <input type="number" id="fDays" placeholder="比如：3" min="1">
-      </div>
-      <div class="form-group">
-        <label>最终死因</label>
-        <input type="text" id="fCause" placeholder="比如：懒癌发作" maxlength="20">
-      </div>
-      <button class="btn-bury" onclick="buryItem()">
-        <span class="cross">✝</span>
-        埋葬它
-      </button>
-    </div>
-    <div class="form-hint">* 数据仅保存在本地，放心"埋葬"吧</div>
-  </div>
-
-  <!-- Gravestones -->
-  <div class="cemetery-ground">
-    <div class="gravestones-grid" id="gravestonesGrid">
-      <!-- gravestones rendered here -->
-    </div>
-  </div>
-
-  <!-- Bottom panels -->
-  <div class="bottom-panels">
-    <!-- Obituary -->
-    <div class="obituary-panel" id="obituaryPanel">
-      <div class="obit-empty" id="obitEmpty">
-        <div style="font-size:32px;margin-bottom:10px">🪦</div>
-        点击墓碑查看讣告
-      </div>
-      <div id="obitContent" style="display:none">
-        <div class="obit-header">
-          <span class="deco">⌒—⌒</span>
-          讣告
-          <span class="deco">⌒—⌒</span>
+        <div class="management-panel">
+            <h3>管理检查项目</h3>
+            <div class="add-controls">
+                <input type="text" id="new-item-name" placeholder="项目名(如:卷发棒)" maxlength="8">
+                <button id="add-btn" onclick="addNewItem()">添加</button>
+            </div>
         </div>
-        <div style="text-align:center;margin-bottom:6px;font-size:13px;color:#5a4a2a">沉痛悼念</div>
-        <div class="obit-icon-frame" id="obitIcon">📦</div>
-        <div style="margin-top:18px"></div>
-        <div class="obit-name" id="obitName">—</div>
-        <div class="obit-age" id="obitAge">享年 ? 天</div>
-        <hr class="obit-divider">
-        <div class="obit-cause">
-          <span class="label">死于</span>
-          <span class="value" id="obitCause">—</span>
+
+        <div class="reassurance-panel">
+            <h2>地铁安心看</h2>
+            <p id="reassurance-msg">早上还在焦虑吗？赶紧打卡吧！</p>
         </div>
-        <div class="obit-cause" style="font-size:13px;color:#5a4a30;line-height:1.6" id="obitEpitaph">生前曾立下无数flag，最终败给了现实。</div>
-        <hr class="obit-divider">
-        <div class="obit-price" id="obitPrice">现估价：? 元</div>
-        <div class="obit-price-sub">闲鱼待售，诚心出的来带走。</div>
-        <div class="obit-rip">R.I.P.</div>
-      </div>
+
+        <footer>数据每天午夜12点自动清零。<br>长按打卡项目可显示/隐藏删除按钮。</footer>
     </div>
 
-    <!-- Share panel -->
-    <div class="share-panel">
-      <div class="share-title">分享你的悼念</div>
-      <div class="share-subtitle">点击按钮生成图片，分享给好友</div>
-      <div class="share-preview" id="sharePreview">
-        <span>选中墓碑后<br>点击下载生成讣告图片</span>
-      </div>
-      <div class="share-buttons">
-        <button class="btn-share btn-download" onclick="downloadObit()">⬇ 下载图片</button>
-        <button class="btn-share btn-copy" onclick="copyObit()">↑ 分享图片</button>
-        <button class="btn-share btn-refresh" onclick="refreshEpitaph()">↺ 换一张</button>
-      </div>
-      <div class="tip-box">
-        💡 小贴士：定期回顾墓园，避免再次"复活"它们哦！
-      </div>
-    </div>
-  </div>
+    <script>
+        // --- 1. 数据结构与初始化 ---
+        
+        // 默认项目
+        const defaultItems = [
+            { id: 1, label: '门已反锁', icon: 'lock', time: '' },
+            { id: 2, label: '空调已关', icon: 'ac', time: '' }
+        ];
 
-  <div class="pixel-skulls">
-    <span>💀</span><span>✝</span><span>💀</span><span>✝</span><span>💀</span>
-  </div>
-</div>
+        // 尝试读取本地缓存
+        let checkItems = JSON.parse(localStorage.getItem('ocd_pro_items')) || defaultItems;
 
-<div class="footer">
-  © 2024 吃灰物品墓园 | 本网站不鼓励消费，只鼓励记忆性和反思
-  <span style="float:right">💀</span>
-</div>
+        // --- 2. 渲染网格 (核心实现自适应DOM) ---
+        function renderGrid() {
+            const gridEl = document.getElementById('check-grid');
+            gridEl.innerHTML = ''; // 清空
+            let lastGlobalTime = '';
 
-<!-- Hidden div for rendering obituary to image -->
-<div id="obituary-canvas-source" style="position:absolute;left:-9999px;top:0;width:360px;padding:30px;background:#f0e8c8;font-family:'Noto Serif SC',serif;"></div>
+            checkItems.forEach(item => {
+                // 1. 创建容器
+                const container = document.createElement('div');
+                container.className = 'check-item-container';
 
-<script>
-// =====================
-// ITEM ICONS MAP
-// =====================
-const iconMap = {
-  'kindle': '📖', 'ipad': '📱', '平板': '📱', 'ps5': '🎮', 'switch': '🎮',
-  '游戏': '🎮', '相机': '📷', '吉他': '🎸', '尤克里里': '🪗', '钢琴': '🎹',
-  '画画': '🎨', '绘画': '🎨', '画板': '🎨', '瑜伽': '🧘', '跑步': '👟',
-  '哑铃': '🏋️', '健身': '🏋️', '书': '📚', '小说': '📚', '编程': '💻',
-  '电脑': '💻', '手表': '⌚', '耳机': '🎧', '音箱': '🔊', '乐器': '🎵',
-  '咖啡': '☕', '茶': '🍵', '厨具': '🍳', '锅': '🍲', '钓鱼': '🎣',
-  '自行车': '🚲', '滑板': '🛹', '轮滑': '⛸️', '游泳': '🏊', '摄影': '📸',
-  '乐高': '🧱', '积木': '🧱', '手办': '🗿', '模型': '🚂', '针织': '🧶',
-  '毛线': '🧶', '烘焙': '🥐', '面包': '🍞', '蛋糕': '🎂',
-};
+                // 2. 创建主打卡按钮
+                const button = document.createElement('button');
+                button.className = `check-item ${item.time ? 'active' : ''}`;
+                
+                // 触摸事件处理（防止誤触和点击延迟）
+                let touchTimer;
+                button.ontouchstart = (e) => {
+                    touchTimer = setTimeout(() => {
+                        // 长按逻辑：显示删除按钮
+                        container.classList.toggle('show-delete');
+                    }, 600); // 600ms 算长按
+                };
+                button.ontouchend = (e) => {
+                    clearTimeout(touchTimer); // 如果在此之前抬起，则不是长按
+                };
 
-function getIcon(name) {
-  if (!name) return '📦';
-  const lower = name.toLowerCase();
-  for (const [key, icon] of Object.entries(iconMap)) {
-    if (lower.includes(key)) return icon;
-  }
-  // fallback by first char
-  const defaults = ['📦','🪣','🧸','🎀','🧩','🔮','🪆','🌂','🎭','🪄'];
-  let hash = 0;
-  for (let c of name) hash = (hash * 31 + c.charCodeAt(0)) % defaults.length;
-  return defaults[hash];
-}
+                // 普通点击逻辑
+                button.onclick = (e) => {
+                    // 如果正在显示删除按钮，点击按钮会隐藏删除按钮，而不是打卡
+                    if (container.classList.contains('show-delete')) {
+                        container.classList.remove('show-delete');
+                        return;
+                    }
+                    doCheckPro(item.id);
+                };
 
-const epitaphs = [
-  '生前曾立下无数flag，最终败给了现实。',
-  '买的时候热血沸腾，用的时候三分钟热度。',
-  '它见证了我最后一次"这次一定认真"的誓言。',
-  '购物车里最闪耀的星，柜子里最孤独的魂。',
-  '曾经承载了所有的梦想，如今只剩一层灰尘。',
-  '它来了，它待过，它被遗忘了。',
-  '花了大价钱买教训，如今已物超所值。',
-  '兴趣爱好的坟墓，热爱的终点站。',
-  '曾许下"每天都用"的诺言，如今只能兑现沉默。',
-  '它承担了我所有不切实际的期待。',
-];
+                // 3. 图标 DOM
+                const iconDiv = document.createElement('div');
+                iconDiv.className = `icon icon-${item.icon}`;
+                if (item.icon === 'generic') {
+                    iconDiv.innerHTML = '<div class="icon-generic-prong prong-l"></div><div class="icon-generic-prong prong-r"></div>';
+                }
 
-// =====================
-// DATA
-// =====================
-const STORAGE_KEY = 'chihui_cemetery_v1';
+                // 文字
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'label';
+                labelSpan.innerText = item.label;
 
-function loadItems() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
-}
+                // 状态时间
+                const statusSpan = document.createElement('span');
+                statusSpan.className = 'status';
+                statusSpan.innerText = item.time ? `已确认 ${item.time}` : '未打卡';
 
-function saveItems(items) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-}
+                // 组装按钮
+                button.appendChild(iconDiv);
+                button.appendChild(labelSpan);
+                button.appendChild(statusSpan);
 
-let items = loadItems();
-let selectedId = null;
-let pendingDeleteId = null;
-let epitaphIndex = 0;
+                // 4. 创建删除按钮 (小叉叉)
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerText = '×';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation(); // 防止触发打卡
+                    deleteItem(item.id);
+                };
 
-// =====================
-// RENDER
-// =====================
-function render() {
-  const grid = document.getElementById('gravestonesGrid');
-  grid.innerHTML = '';
+                // 5. 组装容器
+                container.appendChild(button);
+                container.appendChild(deleteBtn);
+                gridEl.appendChild(container);
 
-  document.getElementById('countNum').textContent = items.length;
+                if (item.time) lastGlobalTime = item.time;
+            });
 
-  items.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'gravestone' + (selectedId === item.id ? ' selected' : '');
-    el.dataset.id = item.id;
-    el.innerHTML = `
-      <div class="stone-cross"></div>
-      <div class="stone-body">
-        <div class="stone-name">${esc(item.name)}</div>
-        <div class="stone-icon">${item.icon}</div>
-        <div class="stone-age">享年 ${item.days} 天</div>
-      </div>
-      <div class="stone-base"></div>
-      <div class="ground-strip"></div>
-      <div class="skull-row">💀💀💀</div>
-    `;
-    el.addEventListener('click', (e) => { e.stopPropagation(); selectItem(item.id); });
-    el.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(e, item.id); });
-    grid.appendChild(el);
-  });
+            // 更新底部的定心丸消息
+            if (lastGlobalTime) {
+                updateReassuranceMessage(lastGlobalTime);
+            } else {
+                document.getElementById('reassurance-msg').innerText = '还在焦虑吗？赶紧打卡吧！';
+            }
+        }
 
-  // Add grave button
-  const addEl = document.createElement('div');
-  addEl.className = 'add-grave gravestone';
-  addEl.innerHTML = `
-    <div class="stone-cross" style="opacity:0.4"></div>
-    <div class="stone-body" style="cursor:pointer">
-      <div style="font-size:36px;color:#5a5a7a">+</div>
-    </div>
-    <div class="stone-base" style="opacity:0.3"></div>
-    <div class="ground-strip" style="opacity:0.3"></div>
-    <div class="stone-label">再埋一个</div>
-  `;
-  addEl.addEventListener('click', () => { document.getElementById('fName').focus(); });
-  grid.appendChild(addEl);
-}
+        // --- 3. 功能逻辑 ---
 
-function esc(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+        // 核心打卡
+        function doCheckPro(itemId) {
+            const now = new Date();
+            const exactTimeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+            
+            checkItems = checkItems.map(item => {
+                if (item.id === itemId) {
+                    return { ...item, time: exactTimeStr };
+                }
+                return item;
+            });
 
-// =====================
-// SELECT ITEM
-// =====================
-function selectItem(id) {
-  selectedId = id;
-  const item = items.find(i => i.id === id);
-  render();
-  if (item) showObituary(item);
-}
+            saveAndRender();
+        }
 
-function showObituary(item) {
-  document.getElementById('obitEmpty').style.display = 'none';
-  document.getElementById('obitContent').style.display = 'block';
-  document.getElementById('obitIcon').textContent = item.icon;
-  document.getElementById('obitName').textContent = item.name;
-  document.getElementById('obitAge').textContent = `享年 ${item.days} 天`;
-  document.getElementById('obitCause').textContent = item.cause;
-  document.getElementById('obitEpitaph').textContent = epitaphs[epitaphIndex % epitaphs.length];
-  const priceText = item.price > 0 ? `现估价：${Math.round(item.price * 0.3)} 元` : '现估价：无价之宝（卖不掉）';
-  document.getElementById('obitPrice').textContent = priceText;
-  
-  // Update share preview
-  document.getElementById('sharePreview').innerHTML = `<span style="color:#8a7a5a;font-family:'Noto Serif SC',serif;font-size:13px">点击下方按钮生成讣告图片</span>`;
-}
+        // 添加新项目
+        function addNewItem() {
+            const inputEl = document.getElementById('new-item-name');
+            const name = inputEl.value.trim();
 
-// =====================
-// BURY (ADD)
-// =====================
-function buryItem() {
-  const name = document.getElementById('fName').value.trim();
-  const price = parseFloat(document.getElementById('fPrice').value) || 0;
-  const days = parseInt(document.getElementById('fDays').value) || 1;
-  const cause = document.getElementById('fCause').value.trim();
+            if (!name) { alert('请输入项目名'); return; }
+            if (checkItems.some(item => item.label === name)) { alert('该项目已存在'); return; }
+            if (checkItems.length >= 12) { alert('项目太多啦 (最多12个)'); return; }
 
-  if (!name) { shakeInput('fName'); return; }
-  if (!cause) { shakeInput('fCause'); return; }
+            checkItems.push({
+                id: Date.now(),
+                label: name,
+                icon: 'generic', // 默认通用图标
+                time: ''
+            });
+            inputEl.value = ''; // 清空输入框
+            document.activeElement.blur(); // 隐藏键盘
+            saveAndRender();
+        }
 
-  const item = {
-    id: Date.now().toString(),
-    name, price, days, cause,
-    icon: getIcon(name),
-    createdAt: new Date().toISOString()
-  };
+        // 删除项目
+        function deleteItem(itemId) {
+            // 简单确认
+            if (!confirm('确定删除此项？')) return;
+            checkItems = checkItems.filter(item => item.id !== itemId);
+            saveAndRender();
+        }
 
-  items.unshift(item);
-  saveItems(items);
+        // 保存并渲染
+        function saveAndRender() {
+            localStorage.setItem('ocd_pro_items', JSON.stringify(checkItems));
+            renderGrid();
+        }
 
-  // Clear form
-  ['fName','fPrice','fDays','fCause'].forEach(id => document.getElementById(id).value = '');
-  
-  selectedId = item.id;
-  render();
-  showObituary(item);
-}
+        // 更新定心丸消息
+        function updateReassuranceMessage(timeStr) {
+            const msgEl = document.getElementById('reassurance-msg');
+            msgEl.innerHTML = `你今天早上 <span id="last-check-time">${timeStr}</span> 已完成最近一次安全检查。放心去飞吧！安好！`;
+        }
 
-function shakeInput(id) {
-  const el = document.getElementById(id);
-  el.style.borderColor = '#cc3333';
-  el.style.animation = 'shake 0.3s';
-  setTimeout(() => {
-    el.style.borderColor = '';
-    el.style.animation = '';
-  }, 400);
-  el.focus();
-}
+        // 午夜自动清零时间
+        function checkDailyResetPro() {
+            const lastCheckDate = localStorage.getItem('last_check_date_pro');
+            const today = new Date().toISOString().slice(0, 10);
 
-// =====================
-// DELETE
-// =====================
-function openContextMenu(e, id) {
-  pendingDeleteId = id;
-  selectItem(id);
-  const menu = document.getElementById('contextMenu');
-  menu.classList.remove('hidden');
-  menu.style.left = Math.min(e.clientX, window.innerWidth - 160) + 'px';
-  menu.style.top = Math.min(e.clientY, window.innerHeight - 100) + 'px';
-}
+            if (lastCheckDate && lastCheckDate !== today) {
+                // 跨天了，清空所有项目的时间，保留项目列表本身
+                checkItems = checkItems.map(item => ({ ...item, time: '' }));
+                localStorage.setItem('ocd_pro_items', JSON.stringify(checkItems));
+                localStorage.removeItem('last_check_date_pro');
+            }
+            localStorage.setItem('last_check_date_pro', today);
+        }
 
-document.getElementById('ctxView').addEventListener('click', () => {
-  document.getElementById('contextMenu').classList.add('hidden');
-});
+        // 时钟
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour12: false });
+            document.getElementById('live-clock').innerText = timeStr;
+        }
 
-document.getElementById('ctxDelete').addEventListener('click', () => {
-  document.getElementById('contextMenu').classList.add('hidden');
-  document.getElementById('deleteModal').classList.remove('hidden');
-});
+        // --- 4. 初始化 ---
+        setInterval(updateClock, 1000);
+        updateClock();
+        checkDailyResetPro(); // 检查跨天
+        renderGrid(); // 渲染
 
-document.getElementById('deleteCancelBtn').addEventListener('click', () => {
-  document.getElementById('deleteModal').classList.add('hidden');
-  pendingDeleteId = null;
-});
-
-document.getElementById('deleteConfirmBtn').addEventListener('click', () => {
-  if (pendingDeleteId) {
-    items = items.filter(i => i.id !== pendingDeleteId);
-    saveItems(items);
-    if (selectedId === pendingDeleteId) {
-      selectedId = null;
-      document.getElementById('obitEmpty').style.display = 'block';
-      document.getElementById('obitContent').style.display = 'none';
-      document.getElementById('sharePreview').innerHTML = `<span style="color:#8a7a5a;font-family:'Noto Serif SC',serif;font-size:13px">选中墓碑后<br>点击下载生成讣告图片</span>`;
-    }
-    pendingDeleteId = null;
-    document.getElementById('deleteModal').classList.add('hidden');
-    render();
-  }
-});
-
-document.addEventListener('click', () => {
-  document.getElementById('contextMenu').classList.add('hidden');
-});
-
-// =====================
-// GENERATE OBITUARY IMAGE
-// =====================
-function buildObitHTML(item) {
-  const price = item.price > 0 ? Math.round(item.price * 0.3) : null;
-  const epitaph = epitaphs[epitaphIndex % epitaphs.length];
-  return `
-    <div style="background:#f0e8c8;padding:30px 24px;font-family:'Noto Serif SC',serif;width:320px;border:3px solid #8a6a3a;border-radius:6px;text-align:center;color:#2a1a0a;position:relative;box-sizing:border-box;">
-      <div style="position:absolute;top:6px;bottom:6px;left:6px;right:6px;border:1px solid rgba(100,70,30,0.3);border-radius:4px;pointer-events:none;"></div>
-      <div style="font-size:18px;color:#3a2a00;letter-spacing:3px;margin-bottom:12px;">⌒— 讣告 —⌒</div>
-      <div style="font-size:12px;color:#5a4a2a;margin-bottom:10px;">沉痛悼念</div>
-      <div style="width:80px;height:80px;border-radius:50%;background:#d8c8a0;border:3px solid #6a4a20;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:40px;line-height:80px;">${item.icon}</div>
-      <div style="font-size:26px;color:#1a0a00;margin-bottom:4px;letter-spacing:2px;">${item.name}</div>
-      <div style="font-size:14px;color:#5a4a2a;margin-bottom:14px;">享年 ${item.days} 天</div>
-      <hr style="border:none;border-top:1px solid #8a6a3a;margin:10px 0;opacity:0.5;">
-      <div style="font-size:12px;color:#8a6a3a;margin-bottom:4px;">死于</div>
-      <div style="font-size:15px;font-weight:bold;color:#1a0a00;margin-bottom:8px;">${item.cause}</div>
-      <div style="font-size:13px;color:#5a4a30;line-height:1.7;margin-bottom:14px;">${epitaph}</div>
-      <hr style="border:none;border-top:1px solid #8a6a3a;margin:10px 0;opacity:0.5;">
-      ${price ? `<div style="font-size:18px;color:#cc3333;font-weight:bold;margin:10px 0 4px;">现估价：${price} 元</div><div style="font-size:12px;color:#6a4a2a;margin-bottom:10px;">闲鱼待售，诚心出的来带走。</div>` : `<div style="font-size:14px;color:#6a4a2a;margin:10px 0;">无价之宝（卖不掉）</div>`}
-      <div style="font-size:16px;color:#3a2a10;letter-spacing:4px;margin-top:12px;">R.I.P.</div>
-    </div>
-  `;
-}
-
-async function generateObitImage() {
-  const item = items.find(i => i.id === selectedId);
-  if (!item) { alert('请先点击一个墓碑！'); return null; }
-
-  const src = document.getElementById('obituary-canvas-source');
-  src.innerHTML = buildObitHTML(item);
-  src.style.display = 'block';
-
-  // Wait for fonts
-  await document.fonts.ready;
-  await new Promise(r => setTimeout(r, 100));
-
-  const canvas = await html2canvas(src.firstElementChild, {
-    scale: 2,
-    backgroundColor: null,
-    useCORS: true,
-    logging: false,
-  });
-
-  src.style.display = 'none';
-  return canvas;
-}
-
-async function downloadObit() {
-  const item = items.find(i => i.id === selectedId);
-  if (!item) { alert('请先点击一个墓碑！'); return; }
-  
-  document.getElementById('sharePreview').innerHTML = `<span style="color:#8a7a5a;font-size:13px">生成中...</span>`;
-  
-  const canvas = await generateObitImage();
-  if (!canvas) return;
-
-  // Show preview
-  const img = new Image();
-  img.src = canvas.toDataURL('image/png');
-  img.style.maxWidth = '100%';
-  img.style.borderRadius = '3px';
-  document.getElementById('sharePreview').innerHTML = '';
-  document.getElementById('sharePreview').appendChild(img);
-
-  // Download
-  const a = document.createElement('a');
-  a.download = `RIP_${item.name}_享年${item.days}天.png`;
-  a.href = canvas.toDataURL('image/png');
-  a.click();
-}
-
-async function copyObit() {
-  const item = items.find(i => i.id === selectedId);
-  if (!item) { alert('请先点击一个墓碑！'); return; }
-  
-  document.getElementById('sharePreview').innerHTML = `<span style="color:#8a7a5a;font-size:13px">生成中...</span>`;
-  
-  const canvas = await generateObitImage();
-  if (!canvas) return;
-
-  const img = new Image();
-  img.src = canvas.toDataURL('image/png');
-  img.style.maxWidth = '100%';
-  document.getElementById('sharePreview').innerHTML = '';
-  document.getElementById('sharePreview').appendChild(img);
-
-  canvas.toBlob(async (blob) => {
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': blob })
-      ]);
-      alert('图片已复制到剪贴板！');
-    } catch {
-      alert('复制失败，请使用下载按钮');
-    }
-  });
-}
-
-async function refreshEpitaph() {
-  epitaphIndex++;
-  const item = items.find(i => i.id === selectedId);
-  if (!item) return;
-  showObituary(item);
-  document.getElementById('obitEpitaph').textContent = epitaphs[epitaphIndex % epitaphs.length];
-  document.getElementById('sharePreview').innerHTML = `<span style="color:#8a7a5a;font-family:'Noto Serif SC',serif;font-size:13px">点击下方按钮生成讣告图片</span>`;
-}
-
-// =====================
-// FORM KEYBOARD
-// =====================
-['fName','fPrice','fDays','fCause'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => {
-    if (e.key === 'Enter') buryItem();
-  });
-});
-
-// =====================
-// GENERATE STARS
-// =====================
-function genStars() {
-  const sky = document.getElementById('sky');
-  for (let i = 0; i < 120; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    const size = Math.random() * 2.5 + 0.5;
-    s.style.cssText = `
-      width:${size}px;height:${size}px;
-      top:${Math.random()*70}%;left:${Math.random()*100}%;
-      --dur:${2+Math.random()*4}s;--delay:${Math.random()*4}s;
-    `;
-    sky.appendChild(s);
-  }
-
-  // Clouds
-  for (let i = 0; i < 4; i++) {
-    const c = document.createElement('div');
-    c.className = 'cloud';
-    c.style.cssText = `
-      top:${5+Math.random()*25}%;
-      width:${80+Math.random()*120}px;height:${20+Math.random()*30}px;
-      animation-duration:${60+Math.random()*80}s;
-      animation-delay:-${Math.random()*80}s;
-      opacity:${0.2+Math.random()*0.3};
-    `;
-    sky.appendChild(c);
-  }
-}
-
-// =====================
-// GENERATE TREES
-// =====================
-function genTrees() {
-  const container = document.getElementById('trees');
-  const positions = [2,6,12,18,24,76,82,88,93,98];
-  positions.forEach(p => {
-    const t = document.createElement('div');
-    t.className = 'tree';
-    t.style.left = p + '%';
-    const scale = 0.7 + Math.random() * 0.7;
-    t.style.transform = `scale(${scale})`;
-    t.style.transformOrigin = 'bottom center';
-    t.innerHTML = `
-      <div class="tree-top"></div>
-      <div class="tree-top2"></div>
-      <div class="tree-top3"></div>
-      <div class="tree-trunk"></div>
-    `;
-    container.appendChild(t);
-  });
-}
-
-// =====================
-// SHAKE ANIMATION
-// =====================
-const style = document.createElement('style');
-style.textContent = `@keyframes shake {
-  0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}
-}`;
-document.head.appendChild(style);
-
-// =====================
-// INIT
-// =====================
-genStars();
-genTrees();
-render();
-
-// Auto-select first if exists
-if (items.length > 0) {
-  selectedId = items[0].id;
-  render();
-  showObituary(items[0]);
-}
-</script>
+    </script>
 </body>
 </html>
